@@ -29,13 +29,23 @@
         <v-card>
             <v-card-title>
                 Config Files
-                <v-spacer></v-spacer>
+                <v-spacer class="d-none d-sm-block"></v-spacer>
                 <input type="file" ref="fileUpload" style="display: none" @change="uploadFile" />
-                <v-item-group class="v-btn-toggle">
-                    <v-btn color="" v-if="currentPath !== '' && currentPath !== '/config_examples'" @click="uploadFileButton" :loading="loadings.includes['configFileUpload']"><v-icon>mdi-file-upload</v-icon></v-btn>
-                    <v-btn color="" v-if="currentPath !== '' && currentPath !== '/config_examples'" @click="createFile"><v-icon>mdi-file-plus</v-icon></v-btn>
-                    <v-btn color="" v-if="currentPath !== '' && currentPath !== '/config_examples'" @click="createFolder"><v-icon>mdi-folder-plus</v-icon></v-btn>
-                    <v-btn color="primary" @click="refreshFileList"><v-icon>mdi-refresh</v-icon></v-btn>
+                <v-item-group class="v-btn-toggle my-5 my-sm-0 col-12 col-sm-auto px-0 py-0">
+                    <v-btn v-if="currentPath !== '' && currentPath !== '/config_examples'" class="flex-grow-1" @click="uploadFileButton" :loading="loadings.includes['configFileUpload']"><v-icon>mdi-file-upload</v-icon></v-btn>
+                    <v-btn v-if="currentPath !== '' && currentPath !== '/config_examples'" class="flex-grow-1" @click="createFile"><v-icon>mdi-file-plus</v-icon></v-btn>
+                    <v-btn v-if="currentPath !== '' && currentPath !== '/config_examples'" class="flex-grow-1" @click="createFolder"><v-icon>mdi-folder-plus</v-icon></v-btn>
+                    <v-btn class="flex-grow-1" @click="refreshFileList"><v-icon>mdi-refresh</v-icon></v-btn>
+                    <v-menu :offset-y="true" title="Setup current list">
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn class="flex-grow-1" v-bind="attrs" v-on="on"><v-icon class="">mdi-cog</v-icon></v-btn>
+                        </template>
+                        <v-list>
+                            <v-list-item class="minHeight36">
+                                <v-checkbox class="mt-0" hide-details v-model="showHiddenFiles" label="Hidden files"></v-checkbox>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
                 </v-item-group>
             </v-card-title>
             <v-card-subtitle>Current path: {{ this.currentPath === "" ? "/" : this.currentPath }}</v-card-subtitle>
@@ -49,6 +59,10 @@
                 :sort-by.sync="sortBy"
                 :sort-desc.sync="sortDesc"
                 :items-per-page.sync="countPerPage"
+                :footer-props="{
+                    itemsPerPageText: 'Files'
+                }"
+                mobile-breakpoint="0"
                 item-key="name">
 
                 <template #no-data>
@@ -246,6 +260,14 @@
                     return this.$store.dispatch("gui/setSettings", { settings: { configfiles: { countPerPage: newVal } } });
                 }
             },
+            showHiddenFiles: {
+                get: function() {
+                    return this.$store.state.gui.settings.configfiles.showHiddenFiles
+                },
+                set: function(newVal) {
+                    return this.$store.dispatch("gui/setSettings", { settings: { configfiles: { showHiddenFiles: newVal } } })
+                }
+            },
         },
         created() {
             this.loadPath();
@@ -316,6 +338,10 @@
                 this.files = findDirectory(this.filetree, dirArray);
                 if (dirArray.length === 1 && this.currentPath === "") {
                     this.files = this.files.filter(element => element.filename !== "gcodes");
+                }
+
+                if (!this.showHiddenFiles) {
+                    this.files = this.files.filter(file => file.filename.substr(0, 1) !== ".");
                 }
             },
             clickRow: function(item) {
@@ -481,7 +507,18 @@
                     this.loadPath();
                 }
             },
+            filetree: {
+                deep: true,
+                handler() {
+                    this.loadPath();
+                }
+            },
             currentPath: {
+                handler() {
+                    this.loadPath();
+                }
+            },
+            showHiddenFiles: {
                 handler() {
                     this.loadPath();
                 }

@@ -52,15 +52,15 @@
         <v-card class="fileupload-card my-3" @dragover="dragOverUpload" @dragleave="dragLeaveUpload" @drop.prevent.stop="dragDropUpload">
             <v-card-title>
                 G-Code Files
-                <v-spacer></v-spacer>
+                <v-spacer class="d-none d-sm-block"></v-spacer>
                 <input type="file" ref="fileUpload" style="display: none" @change="uploadFile" />
-                <v-item-group class="v-btn-toggle" name="controllers">
-                    <v-btn @click="clickUploadButton" title="Upload new Gcode" class="primary" :loading="loadings.includes('gcodeUpload')"><v-icon>mdi-upload</v-icon></v-btn>
-                    <v-btn @click="createDirectory" title="Create new Directory"><v-icon>mdi-folder-plus</v-icon></v-btn>
-                    <v-btn @click="refreshFileList" title="Refresh current Directory"><v-icon>mdi-refresh</v-icon></v-btn>
+                <v-item-group class="v-btn-toggle my-5 my-sm-0 col-12 col-sm-auto px-0 py-0" name="controllers">
+                    <v-btn @click="clickUploadButton" title="Upload new Gcode" class="primary flex-grow-1" :loading="loadings.includes('gcodeUpload')"><v-icon>mdi-upload</v-icon></v-btn>
+                    <v-btn @click="createDirectory" title="Create new Directory" class="flex-grow-1"><v-icon>mdi-folder-plus</v-icon></v-btn>
+                    <v-btn @click="refreshFileList" title="Refresh current Directory" class="flex-grow-1"><v-icon>mdi-refresh</v-icon></v-btn>
                     <v-menu :offset-y="true" title="Setup current list">
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn class="" v-bind="attrs" v-on="on"><v-icon>mdi-cog</v-icon></v-btn>
+                            <v-btn class="flex-grow-1" v-bind="attrs" v-on="on"><v-icon class="">mdi-cog</v-icon></v-btn>
                         </template>
                         <v-list>
                             <v-list-item class="minHeight36">
@@ -93,9 +93,13 @@
                 :sort-by.sync="sortBy"
                 :sort-desc.sync="sortDesc"
                 :items-per-page.sync="countPerPage"
+                :footer-props="{
+                    itemsPerPageText: 'Files'
+                }"
                 item-key="name"
                 :search="search"
                 :custom-filter="advancedSearch"
+                mobile-breakpoint="0"
                 @pagination="refreshMetadata">
 
                 <template slot="items" slot-scope="props">
@@ -230,9 +234,9 @@
     </div>
 </template>
 <script>
-    import { mapState, mapGetters } from 'vuex';
-    import axios from 'axios';
-    import { findDirectory } from "@/plugins/helpers";
+    import { mapState, mapGetters } from 'vuex'
+    import axios from 'axios'
+    import { findDirectory } from "@/plugins/helpers"
 
     export default {
         data () {
@@ -261,7 +265,7 @@
                     item: {}
                 },
                 headers: [
-                    { text: '',               value: '',                align: 'left',  configable: false,  visible: true },
+                    { text: '',               value: '',                align: 'left',  configable: false,  visible: true, filterable: false },
                     { text: 'Name',           value: 'filename',        align: 'left',  configable: false,  visible: true },
                     { text: 'Filesize',       value: 'size',            align: 'right', configable: true,   visible: true },
                     { text: 'Last modified',  value: 'modified',        align: 'right', configable: true,   visible: true },
@@ -310,17 +314,17 @@
                 'is_printing'
             ]),
             configHeaders() {
-                return this.headers.filter(header => header.configable === true);
+                return this.headers.filter(header => header.configable === true)
             },
             filteredHeaders() {
-                return this.headers.filter(header => header.visible === true);
+                return this.headers.filter(header => header.visible === true)
             },
             showHiddenFiles: {
                 get: function() {
-                    return this.$store.state.gui.gcodefiles.showHiddenFiles;
+                    return this.$store.state.gui.gcodefiles.showHiddenFiles
                 },
                 set: function(newVal) {
-                    return this.$store.dispatch("gui/setSettings", { gcodefiles: { showHiddenFiles: newVal } });
+                    return this.$store.dispatch("gui/setSettings", { gcodefiles: { showHiddenFiles: newVal } })
                 }
             },
             countPerPage: {
@@ -328,7 +332,7 @@
                     return this.$store.state.gui.gcodefiles.countPerPage
                 },
                 set: function(newVal) {
-                    return this.$store.dispatch("gui/setSettings", { gcodefiles: { countPerPage: newVal } });
+                    return this.$store.dispatch("gui/setSettings", { gcodefiles: { countPerPage: newVal } })
                 }
             },
         },
@@ -344,21 +348,21 @@
                 }
             },
             doUploadFile: function(file) {
-                let toast = this.$toast;
-                let formData = new FormData();
-                let filename = file.name.replace(" ", "_");
+                let toast = this.$toast
+                let formData = new FormData()
+                let filename = file.name.replace(" ", "_")
 
-                formData.append('file', file, (this.currentPath+"/"+filename).substring(7));
-                this.$store.commit('socket/addLoading', { name: 'gcodeUpload' });
+                formData.append('file', file, (this.currentPath+"/"+filename).substring(7))
+                this.$store.commit('socket/addLoading', { name: 'gcodeUpload' })
 
                 return axios.post('//' + this.hostname + ':' + this.port + '/server/files/upload',
                     formData, { headers: { 'Content-Type': 'multipart/form-data' } }
                 ).then((result) => {
-                    this.$store.commit('socket/removeLoading', { name: 'gcodeUpload' });
+                    this.$store.commit('socket/removeLoading', { name: 'gcodeUpload' })
                     toast.success("Upload of "+result.data.result+" successful!");
                 }).catch(() => {
-                    this.$store.commit('socket/removeLoading', { name: 'gcodeUpload' });
-                    toast.error("Cannot upload the file!");
+                    this.$store.commit('socket/removeLoading', { name: 'gcodeUpload' })
+                    toast.error("Cannot upload the file!")
                 });
             },
             clickUploadButton: function() {
