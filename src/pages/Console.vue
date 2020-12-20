@@ -64,6 +64,7 @@
                     disable-pagination
                     class="event-table"
                     :custom-sort="customSort"
+                    mobile-breakpoint="0"
                 >
                     <template #no-data>
                         <div class="text-center">empty</div>
@@ -71,11 +72,14 @@
 
                     <template #item="{ item }">
                         <tr>
-                            <td class="log-cell title-cell py-2 flex-grow-0 pr-0">
+                            <td class="log-cell title-cell py-2 flex-grow-0 pr-0 d-none d-sm-table-cell">
                                 {{ item.date.toLocaleString() }}
                             </td>
+                            <td class="log-cell title-cell py-2 flex-grow-0 pr-0 d-sm-none">
+                                {{ formatTimeMobile(item.date)}}
+                            </td>
                             <td class="log-cell content-cell py-2" colspan="2">
-                                <span v-if="item.message" class="message" v-html="formatMessage(item.message)"></span>
+                                <span v-if="item.message" :class="'message '+colorConsoleMessage(item)" v-html="formatConsoleMessage(item.message)"></span>
                             </td>
                         </tr>
                     </template>
@@ -87,6 +91,7 @@
 <script>
     import { mapState, mapGetters } from 'vuex';
     import Vue from "vue";
+    import { colorConsoleMessage, formatConsoleMessage } from "@/plugins/helpers";
 
     export default {
         data () {
@@ -136,11 +141,19 @@
                 this.gcode = "";
                 this.lastCommandNumber = null;
             },
-            formatMessage(message) {
-                if (typeof message === "string") message = message.replace(/(?:\r\n|\r|\n)/g, '<br>');
+            formatTimeMobile(date) {
+                let hours = date.getHours();
+                if (hours < 10) hours = "0"+hours.toString();
+                let minutes = date.getMinutes();
+                if (minutes < 10) minutes = "0"+minutes.toString();
+                let seconds = date.getSeconds();
+                if (seconds < 10) seconds = "0"+seconds.toString();
 
-                return message;
+
+                return hours+":"+minutes+":"+seconds;
             },
+            colorConsoleMessage: colorConsoleMessage,
+            formatConsoleMessage: formatConsoleMessage,
             onKeyUp() {
                 if (this.lastCommandNumber === null && this.lastCommands.length) {
                     this.lastCommandNumber = this.lastCommands.length - 1;
