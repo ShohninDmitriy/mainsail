@@ -25,7 +25,7 @@
             :src="sidebarBackground"
         >
             <div id="nav-header">
-                <img :src="require('./assets/logo.svg')" />
+                <img :src="sidebarLogo" />
                 <v-toolbar-title>{{ printername !== "" ? printername : hostname }}</v-toolbar-title>
             </div>
             <ul class="navi" :expand="$vuetify.breakpoint.mdAndUp">
@@ -90,28 +90,24 @@
             </v-card>
         </v-dialog>
 
-        <v-dialog :value="!updateStatus" persistent width="500">
-            <v-card color="primary" dark >
-                <v-card-text class="pt-2">
-                    {{ updateMessage}}
-                    <v-progress-linear indeterminate color="white" class="mb-0 mt-2"></v-progress-linear>
-                </v-card-text>
-            </v-card>
-        </v-dialog>
+        <update-dialog></update-dialog>
     </v-app>
 </template>
 
 <script>
     import routes from './routes'
     import { mapState, mapGetters } from 'vuex'
-    import TopCornerMenu from "@/components/TopCornerMenu";
+    import TopCornerMenu from "@/components/TopCornerMenu"
+    import UpdateDialog from "@/components/UpdateDialog"
 
 export default {
     props: {
         source: String,
     },
     components: {
-        TopCornerMenu
+        UpdateDialog,
+        TopCornerMenu,
+
     },
     data: () => ({
         overlayDisconnect: true,
@@ -144,9 +140,6 @@ export default {
             save_config_pending: state => state.printer.configfile.save_config_pending,
 
             klipperVersion: state => state.printer.software_version,
-
-            updateStatus: state => state.server.updateManager.updateResponse.complete,
-            updateMessage: state => state.server.updateManager.updateResponse.message,
         }),
         ...mapGetters([
             'getTitle',
@@ -155,6 +148,16 @@ export default {
         print_percent: {
             get() {
                 return this.$store.getters["printer/getPrintPercent"]
+            }
+        },
+        defaultFavicons: {
+            get() {
+                return this.$store.getters["files/getFavicons"]
+            }
+        },
+        sidebarLogo: {
+            get() {
+                return this.$store.getters["files/getSidebarLogo"]
             }
         },
         sidebarBackground: {
@@ -220,11 +223,12 @@ export default {
                 context.fillStyle = "#e41313";
                 context.fill();
 
-                favicon16.href = canvas.toDataURL('image/png')
+                //favicon16.href = canvas.toDataURL('image/png')
                 favicon32.href = canvas.toDataURL('image/png')
             } else {
-                favicon16.href = "/img/icons/favicon-16x16.png"
-                favicon32.href = "/img/icons/favicon-32x32.png"
+                const [favicon16Default, favicon32Default] = this.defaultFavicons
+                favicon16.href = favicon16Default
+                favicon32.href = favicon32Default
             }
         }
     },
@@ -259,6 +263,9 @@ export default {
                 let style = document.getElementById("customStylesheet")
                 if (style) style.remove()
             }
+        },
+        defaultFavicons() {
+            this.drawFavicon(this.print_percent);
         }
     },
 }

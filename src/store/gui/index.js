@@ -8,9 +8,9 @@ export function getDefaultState() {
 			printername: "",
 		},
 		dashboard: {
-			boolWebcam: true,
+			boolWebcam: false,
 			boolTempchart: true,
-			boolConsole: false,
+			boolConsole: true,
 			hiddenMacros: [],
 			hiddenTempChart: [],
 		},
@@ -22,9 +22,14 @@ export function getDefaultState() {
 			flipY: false,
 			bool: false,
 		},
+		console: {
+			hideWaitTemperatures: true,
+			boolCustomFilters: false,
+			customFilters: "",
+		},
 		gcodefiles: {
 			countPerPage: 10,
-			showHiddenFiles: true,
+			showHiddenFiles: false,
 			hideMetadataColums: []
 		},
 		settings: {

@@ -7,7 +7,7 @@
             <v-spacer></v-spacer>
             <v-tooltip top>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn small class="px-2 minwidth-0" color="primary" @click="btnSync" v-bind="attrs" v-on="on"><v-icon small>mdi-refresh</v-icon></v-btn>
+                    <v-btn small class="px-2 minwidth-0" color="primary" :loading="loadings.includes('loadingBtnSyncUpdateManager')" @click="btnSync" v-bind="attrs" v-on="on"><v-icon small>mdi-refresh</v-icon></v-btn>
                 </template>
                 <span>Check for updates</span>
             </v-tooltip>
@@ -109,6 +109,7 @@
                 package_version: state => state.packageVersion,
                 klipper: state => state.server.updateManager.klipper,
                 moonraker: state => state.server.updateManager.moonraker,
+                loadings: state => state.socket.loadings,
             }),
             mainsail:{
                 get() {
@@ -121,6 +122,7 @@
         },
         methods: {
             btnSync() {
+                this.$store.commit('socket/addLoading', { name: 'loadingBtnSyncUpdateManager' });
                 this.$socket.sendObj('machine.update.status', { refresh: true }, 'server/updateManager/getStatus')
             },
             getColor(object) {
@@ -131,10 +133,7 @@
                     if ('current_hash' in object && 'remote_hash' in object && object.current_hash !== object.remote_hash) return 'primary'
 
                     if ('name' in object && object.name === "mainsail") {
-                        let remote_version = object.remote_version.split(' ')
-                        remote_version = (remote_version.length > 1) ? remote_version[1] : remote_version[0]
-
-                        if (this.package_version !== remote_version) return 'primary'
+                        if ('v'+this.package_version !== object.remote_version.replace('Version ', 'v')) return 'primary'
                     }
 
                     return 'green'
@@ -150,10 +149,7 @@
                     if ('current_hash' in object && 'remote_hash' in object && object.current_hash !== object.remote_hash) return 'update'
 
                     if ('name' in object && object.name === "mainsail") {
-                        let remote_version = object.remote_version.split(' ')
-                        remote_version = (remote_version.length > 1) ? remote_version[1] : remote_version[0]
-
-                        if (this.package_version !== remote_version) return 'update'
+                        if ('v'+this.package_version !== object.remote_version.replace('Version ', 'v')) return 'update'
                     }
 
                     return 'up-to-date'
@@ -169,10 +165,7 @@
                     if ('current_hash' in object && 'remote_hash' in object && object.current_hash !== object.remote_hash) return 'progress-upload'
 
                     if ('name' in object && object.name === "mainsail") {
-                        let remote_version = object.remote_version.split(' ')
-                        remote_version = (remote_version.length > 1) ? remote_version[1] : remote_version[0]
-
-                        if (this.package_version !== remote_version) return 'progress-upload'
+                        if ('v'+this.package_version !== object.remote_version.replace('Version ', 'v')) return 'progress-upload'
                     }
 
                     return 'check'
