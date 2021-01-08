@@ -1,9 +1,10 @@
 ---
 layout: default
 title: Moonraker
-parent: Setup Guide
+parent: Manual Setup Guide
+grand_parent: Setup Guides
 nav_order: 4
-permalink: /setup/moonraker
+permalink: /setup/manual-setup/moonraker
 ---
 ## Moonraker
 Moonraker is a web server that exposes APIs which lets Mainsail interact with Klipper.
@@ -20,9 +21,6 @@ Run Moonrakers install script:
 cd ~/moonraker/scripts
 ./install-moonraker.sh -c /home/pi/klipper_config/moonraker.conf
 ```
-
-Once the script is finished, both Moonraker and Klipper should be started.  
-In `/tmp/klippy.log` the following entry should appear: `Moonraker: server connection detected`
 
 ### Configuration
 > ⚠️ **Please pay attention to the following steps!**  
@@ -47,6 +45,7 @@ config_path: ~/klipper_config
 enabled: true
 trusted_clients:
     192.168.1.0/24
+    2a02:810d:9340:33f6::/64
 
 [update_manager]
 client_repo: meteyou/mainsail
