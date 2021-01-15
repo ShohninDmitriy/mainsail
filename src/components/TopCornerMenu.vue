@@ -33,7 +33,7 @@
                 <v-subheader class="pt-2" style="height: auto;">Power Devices</v-subheader>
                 <v-list-item v-for="(device, index) in devices" v-bind:key="index" class="minheight30" @click="changeSwitch(device, device.status)" :disabled="(device.status === 'error')">
                     <v-list-item-title>
-                        <v-icon class="mr-2">mdi-{{ device.status === 'on' ? 'toggle-switch' : 'toggle-switch-off' }}</v-icon>{{ device.device }}
+                        <v-icon class="mr-2" :color="device.status === 'on' ? '' : 'grey darken-2'">mdi-{{ device.status === 'on' ? 'toggle-switch' : 'toggle-switch-off' }}</v-icon>{{ device.device }}
                     </v-list-item-title>
                 </v-list-item>
             </div>
@@ -74,11 +74,11 @@ export default {
             Vue.prototype.$socket.sendObj(rpc,{ [device.device]: null },"server/power/responseToggle")
         },
         doRestart: function() {
-            this.$store.commit('server/addEvent', "RESTART")
+            this.$store.commit('server/addEvent', { message: "RESTART", type: 'command' })
             this.$socket.sendObj('printer.gcode.script', { script: "RESTART" })
         },
         doFirmwareRestart: function() {
-            this.$store.commit('server/addEvent', "FIRMWARE_RESTART")
+            this.$store.commit('server/addEvent', { message: "FIRMWARE_RESTART", type: 'command' })
             this.$socket.sendObj('printer.gcode.script', { script: "FIRMWARE_RESTART" })
         },
         doServiceRestartKlipper: function() {

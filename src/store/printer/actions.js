@@ -3,7 +3,7 @@ import Vue from 'vue'
 export default {
 	reset({ commit }) {
 		commit('reset')
-		//commit('tempHistory/reset')
+		commit('tempHistory/reset')
 	},
 
 	init() {
@@ -42,8 +42,8 @@ export default {
 			if (!blocklist.includes(nameSplit[0])) subscripts = {...subscripts, [key]: null }
 		}
 
-		if (subscripts !== {}) Vue.prototype.$socket.sendObj('printer.objects.subscribe', { objects: subscripts }, "printer/getData");
-		Vue.prototype.$socket.sendObj("server.temperature_store", {}, "printer/tempHistory/getHistory");
+		if (subscripts !== {}) Vue.prototype.$socket.sendObj('printer.objects.subscribe', { objects: subscripts }, "printer/getData")
+		Vue.prototype.$socket.sendObj("server.temperature_store", {}, "printer/tempHistory/getHistory")
 
 		commit('void', null, { root: true })
 	},
