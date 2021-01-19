@@ -38,7 +38,9 @@ export function getDefaultState() {
 				showHiddenFiles: false,
 			}
 		},
-		remotePrinters: []
+		remotePrinters: [],
+		presets: [],
+		cooldownGcode: "TURN_OFF_HEATERS"
 	}
 }
 
