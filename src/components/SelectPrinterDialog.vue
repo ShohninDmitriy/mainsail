@@ -17,7 +17,9 @@
                     </span>
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
-                <v-btn v-if="!isConnecting && !connectingFailed && !dialogAddPrinter.bool && !dialogEditPrinter.bool" small class="minwidth-0" @click="checkPrinters"><v-icon small>mdi-sync</v-icon></v-btn>
+                <v-btn v-if="!isConnecting && !connectingFailed && !dialogAddPrinter.bool && !dialogEditPrinter.bool && this['farm/countPrinters'] > 0" small class="minwidth-0" @click="checkPrinters"><v-icon small>mdi-sync</v-icon></v-btn>
+                <v-btn small class="minwidth-0" v-if="!isConnecting && !connectingFailed && dialogAddPrinter.bool" @click="dialogAddPrinter.bool = false"><v-icon small>mdi-close-thick</v-icon></v-btn>
+                <v-btn small class="minwidth-0" v-if="!isConnecting && !connectingFailed && dialogEditPrinter.bool" @click="dialogEditPrinter.bool = false"><v-icon small>mdi-close-thick</v-icon></v-btn>
             </v-toolbar>
             <v-card-text class="pt-5" v-if="isConnecting">
                 <v-progress-linear color="white" indeterminate></v-progress-linear>
@@ -35,7 +37,11 @@
                         <v-col class="col-8">
                             <v-text-field
                                 v-model="dialogAddPrinter.hostname"
-                                :rules="[v => !!v || 'Hostname is required']"
+                                :rules="[
+                                    v => !!v || 'Hostname is required',
+                                    v => !v.startsWith('http:') || 'invalid hostname/IP',
+                                    v => !v.startsWith('https:') || 'invalid hostname/IP',
+                                ]"
                                 label="Hostname/IP"
                                 required
                             ></v-text-field>
@@ -69,7 +75,11 @@
                         <v-col class="col-8">
                             <v-text-field
                                 v-model="dialogEditPrinter.hostname"
-                                :rules="[v => !!v || 'Hostname is required']"
+                                :rules="[
+                                    v => !!v || 'Hostname is required',
+                                    v => !v.startsWith('http:') || 'invalid hostname/IP',
+                                    v => !v.startsWith('https:') || 'invalid hostname/IP',
+                                ]"
                                 label="Hostname/IP"
                                 required
                             ></v-text-field>
@@ -128,6 +138,13 @@
                             </v-row>
                         </v-col>
                     </v-row>
+                    <v-row v-if="showCorsInfo">
+                        <v-col>
+                            <p class="text-center" v-if="this['farm/countPrinters'] === 0">Hello and welcome to the remote mode of Mainsail!</p>
+                            <p class="text-center">Please remember to add <code>{{ currentUrl }}</code> in moonraker.conf within "cors_domains".</p>
+                            <p class="text-center">You can find more details at <a href="https://docs.mainsail.xyz/remotemode" target="_blank">docs.mainsail.xyz/remotemode</a>.</p>
+                        </v-col>
+                    </v-row>
                     <v-row>
                         <v-col class="text-center mt-0">
                             <v-btn @click="dialogAddPrinter.bool = true">add printer</v-btn>
@@ -176,7 +193,25 @@ export default {
         ]),
         ...mapActions({
             readPrinters: "farm/readStoredPrinters"
-        })
+        }),
+        currentUrl: {
+            get() {
+                return "http://"+window.location.hostname+(window.location.port !== 80 && window.location.port !== '' ? ':'+window.location.port : '')
+            }
+        },
+        showCorsInfo: {
+            get() {
+                if (this["farm/countPrinters"]) {
+                    for (const [ ,printer] of Object.entries(this["farm/getPrinters"])) {
+                        if (!printer.socket.isConnected) return true
+                    }
+
+                    return false
+                }
+
+                return true
+            }
+        }
     },
     methods: {
         addPrinter() {
