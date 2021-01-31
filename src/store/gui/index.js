@@ -22,6 +22,14 @@ export function getDefaultState() {
 			flipY: false,
 			bool: false,
 		},
+		tempchart: {
+			intervalChartUpdate: 1000,
+			intervalDatasetUpdate: 500,
+			autoscale: false,
+			datasetSettings: {
+
+			},
+		},
 		console: {
 			hideWaitTemperatures: true,
 			boolCustomFilters: false,

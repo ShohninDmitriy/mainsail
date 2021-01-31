@@ -11,6 +11,12 @@ export default {
 
 	setSettings({ commit, dispatch }, payload) {
 		commit('setSettings', payload)
+
+		if ('tempchart' in payload && 'boolPowerDatasets' in payload.tempchart) {
+			if (payload.tempchart.boolPowerDatasets) commit('printer/tempHistory/showPowerDatasets', {}, { root: true })
+			else commit('printer/tempHistory/hidePowerDatasets', {}, { root: true })
+		}
+
 		dispatch('upload')
 	},
 
@@ -54,6 +60,11 @@ export default {
 
 	deletePreset({ commit, dispatch }, payload) {
 		commit("deletePreset", payload)
+		dispatch("upload")
+	},
+
+	setTempchartDatasetSetting({ commit, dispatch }, payload) {
+		commit("setTempchartDatasetSetting", payload)
 		dispatch("upload")
 	}
 }

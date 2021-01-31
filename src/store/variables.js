@@ -12,3 +12,13 @@ export const colorHeaterBed = '#2196F3'
 export const colorChamber = '#4CAF50'
 export const temperaturChartSampleLength = 1200
 export const themeDir = '.theme'
+export const datasetTypes = [
+	"temperature",
+	"target",
+	"power",
+]
+
+export const additionalSensors = [
+	"bme280",
+	"htu21d",
+]
