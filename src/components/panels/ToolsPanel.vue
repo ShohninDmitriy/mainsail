@@ -128,7 +128,7 @@
                                 </template>
                                 <span>min: {{ sensor.measured_min_temp ? sensor.measured_min_temp.toFixed(1) : 0}}°<br />max: {{ sensor.measured_max_temp ? sensor.measured_max_temp.toFixed(1) : 0 }}°</span>
                               </v-tooltip>
-                              <span v-for="(values, key) of sensor.additionValues" v-bind:key="key" class="d-block">{{ values.value.toFixed(1) }} {{ values.unit }}</span>
+                              <span v-for="(values, key) of sensor.tempListAdditionValues" v-bind:key="key" class="d-block">{{ values.value.toFixed(1) }} {{ values.unit }}</span>
                             </v-col>
                             <v-col class="text-center py-2 pr-8 vertical_align_center"><span>&nbsp;</span></v-col>
                         </v-row>
@@ -156,39 +156,58 @@
                 </v-toolbar>
                 <v-card-text class="pt-3">
                     <v-container class="px-0 py-0">
-                        <v-row>
+                        <v-row v-if="'chartTemperature' in editHeater.object && editHeater.object.chartTemperature">
                             <v-col class="col-12">
                                 <v-checkbox
                                     v-model="editHeater.boolTemperature"
                                     label="Show current temperature in chart"
                                     hide-details
                                     class="mt-0"
-                                    v-if="'chartTemperature' in editHeater.object && editHeater.object.chartTemperature"
-                                    @change="setVisibleTemperature"
+                                    @change="setVisible('temperature')"
                                 ></v-checkbox>
                             </v-col>
                         </v-row>
-                        <v-row>
+                        <v-row v-if="'chartTarget' in editHeater.object && editHeater.object.chartTarget">
                             <v-col class="col-12">
                                 <v-checkbox
                                     v-model="editHeater.boolTarget"
                                     label="Show target temperature in chart"
                                     hide-details
                                     class="mt-0"
-                                    v-if="'chartTarget' in editHeater.object && editHeater.object.chartTarget"
-                                    @change="setVisibleTarget"
+                                    @change="setVisible('target')"
                                 ></v-checkbox>
                             </v-col>
                         </v-row>
-                        <v-row>
+                        <v-row v-if="'chartPower' in editHeater.object && editHeater.object.chartPower">
                             <v-col class="col-12">
                                 <v-checkbox
                                     v-model="editHeater.boolPower"
                                     label="Show PWM-power in chart"
                                     hide-details
                                     class="mt-0"
-                                    v-if="'chartPower' in editHeater.object && editHeater.object.chartPower"
-                                    @change="setVisiblePower"
+                                    @change="setVisible('power')"
+                                ></v-checkbox>
+                            </v-col>
+                        </v-row>
+                        <v-row v-if="'chartSpeed' in editHeater.object && editHeater.object.chartSpeed">
+                            <v-col class="col-12">
+                                <v-checkbox
+                                    v-model="editHeater.boolSpeed"
+                                    label="Show PWM-power in chart"
+                                    hide-details
+                                    class="mt-0"
+                                    @change="setVisible('speed')"
+                                ></v-checkbox>
+                            </v-col>
+                        </v-row>
+                        <v-row v-for="key in Object.keys(editHeater.additionSensors)" v-bind:key="key">
+                            <v-col class="col-12">
+                                <v-checkbox
+                                    v-model="editHeater.additionSensors[key]"
+                                    :label="'Show '+key+' in list'"
+                                    hide-details
+                                    class="mt-0"
+                                    @change="setVisibleAdditionalSensor(key)"
                                 ></v-checkbox>
                             </v-col>
                         </v-row>
@@ -230,6 +249,8 @@
                     boolTemperature: false,
                     boolTarget: false,
                     boolPower: false,
+                    boolSpeed: false,
+                    additionSensors: {},
                     color: "",
                 }
             }
@@ -318,29 +339,30 @@
                 this.editHeater.boolTemperature = 'chartTemperature' in object && object.chartTemperature !== undefined && 'visible' in object.chartTemperature ? object.chartTemperature.visible : false
                 this.editHeater.boolTarget = 'chartTarget' in object && object.chartTarget !== undefined && 'visible' in object.chartTarget ? object.chartTarget.visible : false
                 this.editHeater.boolPower = 'chartPower' in object && object.chartPower !== undefined && 'visible' in object.chartPower ? object.chartPower.visible : false
+                this.editHeater.boolSpeed = 'chartSpeed' in object && object.chartSpeed !== undefined && 'visible' in object.chartSpeed ? object.chartSpeed.visible : false
+
+                let additionalSensors = {}
+                Object.keys(object.additionValues).forEach(sensor => {
+                    additionalSensors[sensor] = object.additionValues[sensor]['gui']['boolList']
+                })
+                this.editHeater.additionSensors = Object.assign(additionalSensors)
 
                 this.editHeater.bool = true
             },
-            setVisibleTemperature() {
-                if ("name" in this.editHeater.object) {
-                    this.$store.commit('printer/tempHistory/setVisible', { name: this.editHeater.object.name, type: 'temperature', value: this.editHeater.boolTemperature })
-                    this.$store.dispatch('gui/setTempchartDatasetSetting', { name: this.editHeater.object.name, type: 'temperature', value: this.editHeater.boolTemperature })
-                }
+            setVisible(type) {
+              if ("name" in this.editHeater.object) {
+                this.$store.commit('printer/tempHistory/setVisible', { name: this.editHeater.object.name, type: type, value: this.editHeater['bool'+type.charAt(0).toUpperCase() + type.slice(1)] })
+                this.$store.dispatch('gui/setTempchartDatasetSetting', { name: this.editHeater.object.name, type: type, value: this.editHeater['bool'+type.charAt(0).toUpperCase() + type.slice(1)] })
+              }
             },
-            setVisibleTarget() {
+            setVisibleAdditionalSensor(sensor) {
                 if ("name" in this.editHeater.object) {
-                    this.$store.commit('printer/tempHistory/setVisible', { name: this.editHeater.object.name, type: 'target', value: this.editHeater.boolTarget })
-                    this.$store.dispatch('gui/setTempchartDatasetSetting', { name: this.editHeater.object.name, type: 'target', value: this.editHeater.boolTarget })
-                }
-            },
-            setVisiblePower() {
-                if ("name" in this.editHeater.object) {
-                    this.$store.commit('printer/tempHistory/setVisible', { name: this.editHeater.object.name, type: 'power', value: this.editHeater.boolPower })
-                    this.$store.dispatch('gui/setTempchartDatasetSetting', { name: this.editHeater.object.name, type: 'power', value: this.editHeater.boolPower })
+                    this.$store.dispatch('gui/setTempchartDatasetAdditionalSensorSetting', { name: this.editHeater.object.name, sensor: sensor, value: this.editHeater.additionSensors[sensor] })
                 }
             },
             setChartColor(value) {
                 if ("name" in this.editHeater.object) {
+                    if (typeof value === "object" && 'hex' in value) value = value.hex
                     this.$store.commit('printer/tempHistory/setColor', { name: this.editHeater.object.name, value: value })
                     this.$store.dispatch('gui/setTempchartDatasetSetting', { name: this.editHeater.object.name, type: 'color', value: value })
                 }

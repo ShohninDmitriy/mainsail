@@ -5,8 +5,23 @@ export default {
 		commit('reset')
 	},
 
-	getData({ commit }, payload) {
+	getData({ commit, dispatch }, payload) {
 		commit('setData', payload)
+
+		if (
+			'state' in payload &&
+			'tempchart' in payload.state &&
+			'datasetSettings' in payload.state.tempchart
+		) {
+			for (const key of Object.keys(payload.state.tempchart.datasetSettings)) {
+				if (
+					'color' in payload.state.tempchart.datasetSettings[key] &&
+					typeof payload.state.tempchart.datasetSettings[key].color === "object"
+				) {
+					dispatch('setTempchartDatasetSetting', { name: key, type: 'color', value: payload.state.tempchart.datasetSettings[key].color.hex })
+				}
+			}
+		}
 	},
 
 	setSettings({ commit, dispatch }, payload) {
@@ -21,7 +36,7 @@ export default {
 	},
 
 	upload({ state, rootState }) {
-		let file = new File([JSON.stringify({ state })], '.mainsail.json');
+		let file = new File([JSON.stringify({ state })], '.mainsail.json')
 
 		let formData = new FormData();
 		formData.append('file', file);
@@ -65,6 +80,11 @@ export default {
 
 	setTempchartDatasetSetting({ commit, dispatch }, payload) {
 		commit("setTempchartDatasetSetting", payload)
+		dispatch("upload")
+	},
+
+	setTempchartDatasetAdditionalSensorSetting({ commit, dispatch }, payload) {
+		commit("setTempchartDatasetAdditionalSensorSetting", payload)
 		dispatch("upload")
 	}
 }
