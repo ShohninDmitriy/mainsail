@@ -154,7 +154,13 @@
                     if ('is_dirty' in object && object.is_dirty) return 'orange'
                     if ('is_valid' in object && !object.is_valid) return 'red'
 
-                    if ('version' in object && 'remote_version' in object && semver.valid(object.remote_version) && semver.gt(object.remote_version, object.version)) return 'primary'
+                    if (
+                        'version' in object &&
+                        'remote_version' in object &&
+                        semver.valid(object.remote_version) &&
+                        semver.valid(object.version) &&
+                        semver.gt(object.remote_version, object.version)
+                    ) return 'primary'
 
                     return 'green'
                 }
@@ -167,7 +173,13 @@
                     if ('is_valid' in object && !object.is_valid) return 'invalid'
                     if ('is_dirty' in object && object.is_dirty) return 'dirty'
 
-                    if ('version' in object && 'remote_version' in object && semver.valid(object.remote_version) && semver.gt(object.remote_version, object.version)) return 'update'
+                    if (
+                        'version' in object &&
+                        'remote_version' in object &&
+                        semver.valid(object.remote_version) &&
+                        semver.valid(object.version) &&
+                        semver.gt(object.remote_version, object.version)
+                    ) return 'update'
 
                     return 'up-to-date'
                 }
@@ -180,7 +192,13 @@
                     if ('is_valid' in object && !object.is_valid) return 'alert-circle'
                     if ('is_dirty' in object && object.is_dirty) return 'alert-circle'
 
-                    if ('version' in object && 'remote_version' in object && semver.valid(object.remote_version) && semver.gt(object.remote_version, object.version)) return 'progress-upload'
+                    if (
+                        'version' in object &&
+                        'remote_version' in object &&
+                        semver.valid(object.remote_version) &&
+                        semver.valid(object.version) &&
+                        semver.gt(object.remote_version, object.version)
+                    ) return 'progress-upload'
 
                     return 'check'
                 }
@@ -193,7 +211,13 @@
 
                 if (typeof object === 'object' && object !== false) {
                     if ('is_valid' in object && !object.is_valid) return true
-                    if ('version' in object && 'remote_version' in object && semver.valid(object.remote_version) && semver.gt(object.remote_version, object.version)) return false
+                    if (
+                        'version' in object &&
+                        'remote_version' in object &&
+                        semver.valid(object.remote_version) &&
+                        semver.valid(object.version) &&
+                        semver.gt(object.remote_version, object.version)
+                    ) return false
                 }
 
                 return true
@@ -224,7 +248,8 @@
                     object.branch === "master" &&
                     'current_hash' in object &&
                     'remote_hash' in object &&
-                    object.current_hash !== object.remote_hash
+                    object.current_hash !== object.remote_hash &&
+                    'owner' in object
                 )
             },
             updateModule(key) {
@@ -237,7 +262,8 @@
             openCommitsOverlay(key, object) {
                 if (
                     ['klipper', 'moonraker'].includes(key) &&
-                    this.getVersionClickable(object)
+                    this.getVersionClickable(object) &&
+                    'owner' in object
                 ) {
                     this.commitsOverlay.bool = true
                     this.commitsOverlay.loading = true
