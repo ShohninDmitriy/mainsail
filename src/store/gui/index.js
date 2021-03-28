@@ -36,14 +36,21 @@ export function getDefaultState() {
 			}
 		},
 		webcam: {
-			service: 'mjpegstreamer',
-			targetFps: 25,
-			url: "/webcam/?action=stream",
-			rotate: false,
-			rotateDegrees: 90,
-			flipX: false,
-			flipY: false,
+			selectedCam: "Default",
 			bool: false,
+			configs: [
+				{
+					name: 'Default',
+					icon: 'mdi-webcam',
+					config: {
+						service: "mjpegstreamer",
+						targetFps: 25,
+						url: "/webcam/?action=stream",
+						flipX: false,
+						flipY: false,
+					}
+				}
+			],
 		},
 		tempchart: {
 			intervalChartUpdate: 1000,
@@ -61,7 +68,13 @@ export function getDefaultState() {
 		gcodefiles: {
 			countPerPage: 10,
 			showHiddenFiles: false,
+			showPrintedFiles: true,
 			hideMetadataColums: []
+		},
+		history: {
+			countPerPage: 10,
+			toggleChartCol3: 'filament_usage',
+			hideColums: []
 		},
 		settings: {
 			configfiles: {

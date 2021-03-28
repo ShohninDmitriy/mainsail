@@ -7,7 +7,13 @@ export default {
 	},
 
 	getData({ commit, dispatch, rootState }, payload) {
+		let oldwebcamconfig = payload.value.webcam
+
 		commit('setData', payload.value)
+
+		if (typeof (oldwebcamconfig) !== "undefined") {
+			dispatch('convertCamConfig', oldwebcamconfig)
+		}
 
 		if ('tempchart' in payload.value && 'datasetSettings' in payload.value.tempchart) {
 			commit('setTempchartDatasetSettings', payload.value.tempchart.datasetSettings)
@@ -18,6 +24,52 @@ export default {
 		}
 
 		dispatch('printer/init', null, { root: true })
+	},
+
+	convertCamConfig({ dispatch }, payload) {
+
+		if (typeof (payload.configs) !== "undefined") {
+			return
+		}
+
+		let oldcamconfig = {
+			name: "Default",
+			icon: "mdi-webcam",
+			config: {
+				service: "mjpegstreamer",
+				targetFps: 25,
+				url: "/webcam/?action=stream",
+				flipX: false,
+				flipY: false,
+			},
+		}
+
+		let cleanupconfig = {
+			service: undefined,
+			targetFps: undefined,
+			url: undefined,
+			flipX: undefined,
+			flipY: undefined,
+			rotate: undefined,
+			rotateDegrees: undefined,
+			selectedCam: 'Default',
+			bool: payload.bool,
+			configs: [],
+		}
+
+		if (typeof (payload.url) !== "undefined") {
+			oldcamconfig.config.url = payload.url
+		}
+		if (typeof (payload.service) !== "undefined") {
+			oldcamconfig.config.service = payload.service
+		}
+		oldcamconfig.config.targetFps = payload.targetFps
+		oldcamconfig.config.flipX = payload.flipX
+		oldcamconfig.config.flipY = payload.flipY
+		
+		cleanupconfig.configs.push(oldcamconfig)
+
+		dispatch('setSettings', { 'webcam': cleanupconfig })
 	},
 
 	setSettings({ commit }, payload) {
@@ -85,6 +137,30 @@ export default {
 		})
 	},
 
+	addWebcam({ commit, dispatch, state }, payload) {
+		commit("addWebcam", payload)
+		dispatch('updateSettings', {
+			keyName: 'webcam.configs',
+			newVal: state.webcam.configs
+		})
+	},
+
+	updateWebcam({ commit, dispatch, state }, payload) {
+		commit("updateWebcam", payload)
+		dispatch('updateSettings', {
+			keyName: 'webcam.configs',
+			newVal: state.webcam.configs
+		})
+	},
+
+	deleteWebcam({ commit, dispatch, state }, payload) {
+		commit("deleteWebcam", payload)
+		dispatch('updateSettings', {
+			keyName: 'webcam.configs',
+			newVal: state.webcam.configs
+		})
+	},
+
 	setTempchartDatasetSetting({ commit, dispatch, state }, payload) {
 		commit("setTempchartDatasetSetting", payload)
 		dispatch('updateSettings', {
@@ -149,5 +225,13 @@ export default {
 			dispatch('farm/readStoredPrinters', {}, { root: true })
 		}
 		dispatch('printer/init', null, { root: true })
-	}
+	},
+
+	setHistoryColumns({ commit, dispatch, state }, data) {
+		commit('setHistoryColumns', data)
+		dispatch('updateSettings', {
+			keyName: 'history',
+			newVal: state.history
+		})
+	},
 }

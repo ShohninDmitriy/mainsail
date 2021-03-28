@@ -66,6 +66,28 @@ export default {
 		}
 	},
 
+	addWebcam(state, payload) {
+		state.webcam.configs.push({
+			name: payload.name,
+			icon: payload.icon,
+			config: payload.config
+		})
+	},
+
+	updateWebcam(state, payload) {
+		if (state.webcam.configs[payload.index]) {
+			Vue.set(state.webcam.configs[payload.index], 'name', payload.name)
+			Vue.set(state.webcam.configs[payload.index], 'icon', payload.icon)
+			Vue.set(state.webcam.configs[payload.index], 'config', payload.config)
+		}
+	},
+
+	deleteWebcam(state, payload) {
+		if (state.webcam.configs[payload.index]) {
+			state.webcam.configs.splice(payload.index, 1)
+		}
+	},
+
 	setTempchartDatasetSettings(state, payload) {
 		Vue.set(state.tempchart, 'datasetSettings', payload)
 	},
@@ -88,6 +110,13 @@ export default {
 			Vue.set(state.tempchart.datasetSettings[payload.name]['additionalSensors'], payload.sensor, {})
 
 		Vue.set(state.tempchart.datasetSettings[payload.name]['additionalSensors'][payload.sensor], 'boolList', payload.value)
+	},
 
-	}
+	setHistoryColumns(state, data) {
+		if (data.value && state.history.hideColums.includes(data.name)) {
+			state.history.hideColums.splice(state.history.hideColums.indexOf(data.name), 1)
+		} else if (!data.value && !state.history.hideColums.includes(data.name)) {
+			state.history.hideColums.push(data.name)
+		}
+	},
 }
