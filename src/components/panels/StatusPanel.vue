@@ -17,7 +17,7 @@
         <v-toolbar flat dense>
             <v-toolbar-title>
                 <span class="subheading align-baseline">
-                    <v-icon left>mdi-information</v-icon>{{ (printer_state !== "" ? printer_state.charAt(0).toUpperCase() + printer_state.slice(1) : $t("Panels.StatusPanel.Unknown")) }}
+                    <v-icon left>mdi-information</v-icon>{{ printerStateOutput }}
                 </span>
             </v-toolbar-title>
             <v-spacer></v-spacer>
@@ -64,6 +64,16 @@
                 </v-btn>
             </v-item-group>
         </v-toolbar>
+        <template v-if="current_filename === '' && display_message !== null">
+            <v-container>
+                <v-row>
+                    <v-col class="pr-0 py-2">
+                        <h3 class="font-weight-regular">{{ display_message }}</h3>
+                    </v-col>
+                </v-row>
+            </v-container>
+            <v-divider class="mt-0 mb-0" ></v-divider>
+        </template>
         <v-container v-if="current_filename ">
             <v-row>
                 <v-col class="col-auto pr-0 py-2">
@@ -261,6 +271,22 @@
 
                 displayCancelPrint: state => state.gui.general.displayCancelPrint,
             }),
+            printerStateOutput: {
+                get() {
+                    if (this.$store.state.printer.print_stats.state !== "") {
+                        const printer_state = this.$store.state.printer.print_stats.state
+
+                        if (
+                            printer_state === "standby" &&
+                            this.$store.state.printer.idle_timeout.state === "Printing"
+                        ) return "Busy"
+
+                        return printer_state.charAt(0).toUpperCase() + printer_state.slice(1)
+                    }
+
+                    return this.$t("Panels.StatusPanel.Unknown")
+                }
+            },
             printPercent: {
                 get() {
                     return this.$store.getters["printer/getPrintPercent"];
